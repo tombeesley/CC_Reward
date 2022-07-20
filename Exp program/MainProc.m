@@ -74,7 +74,7 @@ MainWindow = Screen('OpenWindow',0, backCol,[0 0 res(1) res(2)]); % a PTB window
 % L stim (drawn at 0 degrees rotation)
 Lstim = Screen('OpenOffscreenWindow', MainWindow, backCol, [0 0 60 60]);
 if hardDs == 1
-    Screen('DrawLine', Lstim, lineCol, 15, 10, 15, 50, penWidth);
+    Screen('DrawLine', Lstim, lineCol, 14, 10, 14, 50, penWidth);
 else
     Screen('DrawLine', Lstim, lineCol, 10, 10, 10, 50, penWidth);
 end
@@ -97,23 +97,32 @@ Screen('DrawLine', Arrow, [255 255 255], 0, 30, 30, 0, penWidth);
 Screen('DrawLine', Arrow, [255 255 255], 30, 0, 60, 30, penWidth);
 
 % Instructions
-for i = 1:11
-    Ftext = strcat('Instructions/Slide',int2str(i),'.jpg');
+for i = [1:3 5:9]
+    Ftext = strcat('Instructions CCR01/Slide',int2str(i),'.JPG');
     instStim(i) =Screen('MakeTexture', MainWindow, double(imread(Ftext)));
 end
-oldNewPrompt = instStim(7);
-debriefScreen = instStim(8);
-errorFB = instStim(9);
-errorTO = instStim(10);
-restScreen = instStim(11);
+if rem(subNum,2) == 1
+    %odd numbered participants - pre-trial prompt
+    Ftext = strcat('Instructions CCR01/Slide4a.JPG');
+else
+    % even numbered participants - no prompt
+    Ftext = strcat('Instructions CCR01/Slide4b.JPG');
+end
+% make instruction 4
+instStim(4) =Screen('MakeTexture', MainWindow, double(imread(Ftext)));
+
+debriefScreen = instStim(6);
+errorFB = instStim(7);
+errorTO = instStim(8);
+restScreen = instStim(9);
 
 % variables used in procedure
 restBreak = 80;
 
 % load instructions slides here
 RestrictKeysForKbCheck(32); % space bar
-for i = 1:3
-    if i == 3
+for i = 1:5
+    if i == 5
         RestrictKeysForKbCheck(112); % F1 key
     end
     Screen('DrawTexture', MainWindow, instStim(i));
@@ -125,7 +134,7 @@ end
 targetLoc = 0;
 restcnt = 0;
 orientCnt = 0;
-totalPoints = 0
+totalPoints = 0;
 
 for trial = 1:size(TT,1)
     
@@ -152,17 +161,19 @@ for trial = 1:size(TT,1)
     if TT(trial,4) <= 2
         highReward = 1;
         bonus = 10;
-        preTrialText = '10x bonus trial';
+        preTrialText = '10x BONUS trial!';
+        pointsCol = [0 220 0];
     else
         highReward = 0;
         bonus = 1;
         preTrialText = 'Normal trial';
+        pointsCol = [255 255 255];
     end
     
     % b/s manipulaton of pre-trial information
     if rem(subNum,2) == 1
         Screen('TextSize', MainWindow, 50);
-        DrawFormattedText(MainWindow, preTrialText, 'center', midy, [255 255 255]);
+        DrawFormattedText(MainWindow, preTrialText, 'center', midy, pointsCol);
         Screen('Flip', MainWindow);
         WaitSecs(1)
     else
@@ -265,11 +276,13 @@ for trial = 1:size(TT,1)
     end
     
     totalPoints = totalPoints + trialPoints;
-    
+    if totalPoints < 0
+        totalPoints = 0;
+    end    
     totalPointsText = ['TOTAL = ' int2str(totalPoints)];
     
     Screen('TextSize', MainWindow, 50);
-    DrawFormattedText(MainWindow, trialPointsText, 'center', midy-50, [255 255 255]); 
+    DrawFormattedText(MainWindow, trialPointsText, 'center', midy-50, pointsCol); 
     Screen('Flip', MainWindow, [], 1);
     WaitSecs(1)
     
@@ -433,6 +446,13 @@ end
 % Debrief screen
 Screen('DrawTexture', MainWindow, debriefScreen, [], []); % Instruction 1
 Screen(MainWindow, 'Flip');
+RestrictKeysForKbCheck(122); % F11
+[~,~,~] = accKbWait;
+
+% show final points total
+Screen('TextSize', MainWindow, 50);
+DrawFormattedText(MainWindow, totalPointsText, 'center', midy+50, [255 255 255]);
+Screen('Flip', MainWindow);
 RestrictKeysForKbCheck(122); % F11
 [~,~,~] = accKbWait;
 

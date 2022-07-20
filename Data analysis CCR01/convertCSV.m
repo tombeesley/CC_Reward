@@ -1,6 +1,13 @@
 function convertCSV
 
-for s = [122:125 207:221]
+pNums = input('Enter participant numbers: e.g. [1 3:7 9:15 17] ---> ');
+
+if not(isfolder('CSV Data'))
+    mkdir('CSV Data')
+    mkdir('CSV Data\Patterns')
+end
+
+for s = pNums
     s
     load(['Raw Data\S',int2str(s)]);
     
@@ -17,7 +24,7 @@ for s = [122:125 207:221]
     fclose(fileID);
     
     pats = DATA.patterns;
-    for p = 1:12
+    for p = 1:4
         pSet = squeeze(pats(p,:,:));
         exportName = ['CSV Data/Patterns/' subName '_Ps_Set' int2str(p) '.csv'];
         csvwrite(exportName,pSet);
