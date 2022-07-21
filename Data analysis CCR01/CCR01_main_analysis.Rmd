@@ -1,0 +1,55 @@
+---
+title: "CCR01_analysis"
+author: "Tom Beesley"
+date: '2022-07-21'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+
+load("CCR01_data.RData")
+
+data <- 
+  data %>% 
+  mutate(TT = recode(TT, 
+                    '1' = "repeated_high",
+                    '2' = "random_high",
+                    '3' = "repeated_low",
+                    '4' = "random_low")) %>% 
+  separate(TT, into = c("TT", "value"), sep = "_")
+  
+
+```
+
+```{r}
+
+data_summary_blocks <- 
+  data %>% 
+  group_by(block, TT, value) %>% 
+  summarise(meanRT = mean(RT))
+
+data_summary_blocks %>% 
+ggplot(aes(x = block, y = meanRT, colour = interaction(TT, value))) +
+  geom_line(aes(group = interaction(TT, value))) +
+  geom_point()
+
+data_summary <- 
+  data %>% 
+  group_by(instr_cond, TT, value) %>% 
+  summarise(meanRT = mean(RT))
+
+data_summary %>% 
+ggplot(aes(y = meanRT)) +
+  geom_col(aes(x = TT, fill = value), position = position_dodge()) +
+  coord_cartesian(ylim = c(1700,1900)) +
+  facet_wrap(~instr_cond)
+
+```
+
+

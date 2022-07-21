@@ -18,10 +18,12 @@ data <-
   data %>%
   select(-X2, -X3) %>% # date/time stamp didn't work correctly; phase is irrelevant
   # rename the remaining columns
-  rename(block = X4, trial = X5, TT = X6, patType = X7,
+  rename(pNum = X1, block = X4, trial = X5, TT = X6, patType = X7,
          tQuad = X8, tLoc = X9, tOrient = X10,
          resp = X11, acc = X12, RT = X13,
-         trialPoints = X14, totalPoints = X15)
+         trialPoints = X14, totalPoints = X15) %>%
+  mutate(instr_cond = case_when(pNum %% 2 == 1 ~ "instructed",
+                                pNum %% 2 == 0 ~ "not_instructed"), .after = pNum)
 
 save(data, file = "CCR01_data.RData") # save this cleaned data file as
 
